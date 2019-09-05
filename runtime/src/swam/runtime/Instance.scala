@@ -27,8 +27,6 @@ import cats.implicits._
 
 import java.nio.ByteBuffer
 
-import scala.language.higherKinds
-
 /** A module instance that has already been initialized.
   *
   * @param module The [[Module]] of this instance.
@@ -41,7 +39,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
 
     /** Lists the exported fields and their type. */
     def list: Map[String, Type] =
-      exps.mapValues(_.tpe)
+      exps.view.mapValues(_.tpe).toMap
 
     /** Returns a field by name. */
     def field(name: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
@@ -197,7 +195,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
           module.elems(idx) match {
             case CompiledElem(coffset, init) =>
               interpreter.interpretInit(ValType.I32, coffset, self).flatMap { roffset =>
-                val offset = (roffset.get & 0x00000000ffffffffl).toInt
+                val offset = (roffset.get & 0X00000000FFFFFFFFL).toInt
                 if (offset < 0 || init.size + offset > tables(0).size) {
                   F.raiseError(new LinkException("Overflow in table initialization"))
                 } else {
@@ -221,7 +219,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
           module.data(idx) match {
             case CompiledData(coffset, init) =>
               interpreter.interpretInit(ValType.I32, coffset, self).flatMap { roffset =>
-                val offset = (roffset.get & 0x00000000ffffffffl).toInt
+                val offset = (roffset.get & 0X00000000FFFFFFFFL).toInt
                 if (offset < 0 || init.capacity + offset > memories(0).size)
                   F.raiseError(new LinkException("Overflow in memory initialization"))
                 else

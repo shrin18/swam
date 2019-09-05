@@ -17,11 +17,5 @@
 package swam
 package runtime
 package internals
-package compiler
 
-package object low {
-
-  /** A target label for a break */
-  type Target = Int
-
-}
+package object interpreter {}
